@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>XSS预警演示平台</title>
+    </head>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <body>
+        <object type="text/x-scriptlet" data="/head" style="width: 100%;height: 80px">
+        </object>
+        <div>
+            asdasdaks
+        </div>
+    </body>
+</html>
