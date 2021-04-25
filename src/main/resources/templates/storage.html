@@ -4,18 +4,74 @@
         <meta charset="UTF-8">
         <title>存储型XSS</title>
     </head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            padding-top: 20px;
+            margin: 80px auto auto;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            line-height: 40px;
+            font-size: 13px;
+        }
+        table{
+            width: 80%;
+            margin: auto;
+            border-collapse:collapse
+        }
+        table tr th{
+            font-size: 14px;
+        }
+        table tr th,td{
+            width: 30%;
+        }
+        input,button{
+            padding: 5px;
+        }
+        input{
+            width: 50%;
+            border: 1px solid #2196f37d;
+        }
+        button{
+            width: 90px;
+            margin-left: 10px;
+            background: #2196f3e6;
+            border: 1px solid #2196f3e6;
+            color: #fff;
+            border-radius: 5px;
+        }
+        button:hover{
+            cursor: pointer;
+        }
+    </style>
     <body>
-        <table border="1">
-            <tr>
-                <th>标题</th>
-                <th>摘要</th>
-                <th>内容</th>
-            </tr>
-            <tr th:each="u : ${blogList}">
-                <td th:text="${u.title}"></td>
-                <td th:text="${u.description}"></td>
-                <td th:text="${u.content}"></td>
-            </tr>
-        </table>
+        <object type="text/x-scriptlet" data="/head" style="width: 100%;height: 80px;position: fixed;top: 0px;">
+        </object>
+        <div class="main-content">
+            <form action="/addBlog">
+                <p>标题：<input name="title"/></p>
+                <p>摘要：<input name="description"/></p>
+                <p>内容：<input name="content"/></p>
+                <button type="submit">提交</button>
+            </form>
+
+            <table border="1" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th>标题</th>
+                    <th>摘要</th>
+                    <th>内容</th>
+                </tr>
+                <tr th:each="u : ${blogList}">
+                    <td th:utext="${u.title}"></td>
+                    <td th:utext="${u.description}"></td>
+                    <td th:utext="${u.content}"></td>
+                </tr>
+            </table>
+        </div>
     </body>
 </html>

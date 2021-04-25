@@ -7,6 +7,8 @@ import com.google.common.collect.Lists;
 import com.longlysmile.common.lang.Result;
 import com.longlysmile.entity.Blog;
 import com.longlysmile.service.BlogService;
+import com.longlysmile.util.XssFilter;
+import com.sun.xml.internal.txw2.output.IndentingXMLFilter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,13 +28,18 @@ import java.util.List;
 @Controller
 public class IndexController {
 
+    public static int xssStatus = 0;
+
     @Resource
     BlogService blogService;
 
     @RequestMapping("/")
     public ModelAndView index() {
-        return new ModelAndView("index");
+        ModelAndView index = new ModelAndView("index");
+        index.addObject("xssStatus", xssStatus);
+        return index;
     }
+
     @RequestMapping("/head")
     public ModelAndView head() {
         return new ModelAndView("head");
@@ -41,21 +48,39 @@ public class IndexController {
     @RequestMapping("/reflection")
     public ModelAndView reflection(String param) {
         ModelAndView reflection = new ModelAndView("reflection");
-        reflection.addObject("key",param);
+        reflection.addObject("key", param);
         return reflection;
+    }
+
+    @RequestMapping("addBlog")
+    public ModelAndView addBlog(Blog blog) {
+        blogService.save(blog);
+        return new ModelAndView("redirect:/storage");
     }
 
     @RequestMapping("/storage")
     public ModelAndView storage() {
-        ModelAndView reflection = new ModelAndView("storage");
-        List<Blog> list = Lists.newArrayList();
-        list.add(new Blog("标题1","摘要1","内容1"));
-        list.add(new Blog("标题2","摘要2","内容2"));
-        list.add(new Blog("标题3","摘要3","内容3"));
-        reflection.addObject("blogList",list);
-        return reflection;
+        ModelAndView storage = new ModelAndView("storage");
+        List<Blog> list = blogService.list();
+        if(xssStatus == 1){
+            list.forEach(item ->{
+                item.setTitle(XssFilter.transform(item.getTitle()));
+                item.setDescription(XssFilter.transform(item.getDescription()));
+                item.setContent(XssFilter.transform(item.getContent()));
+            });
+        }
+        storage.addObject("blogList", list);
+        storage.addObject("xssStatus", xssStatus);
+        return storage;
     }
 
+    @RequestMapping("/filter")
+    public ModelAndView filter() {
+        ModelAndView index = new ModelAndView("index");
+        xssStatus = xssStatus == 0 ? 1 : 0;
+        index.addObject("xssStatus", xssStatus);
+        return index;
+    }
 
 
 }

@@ -1,54 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="UTF-8">
         <title>XSS预警演示平台</title>
     </head>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
     <style>
-        *{
+        * {
             margin: 0;
             padding: 0;
         }
+
+        .main-content {
+            width: 60%;
+            padding: 20px;
+            font-size: 15px;
+            line-height: 40px;
+            margin: 80px auto auto;
+        }
+
+        .item {
+            border: 1px solid #9e9e9ea1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .item:hover {
+            box-shadow: darkgrey 10px 10px 30px 5px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        input, button {
+            padding: 5px;
+        }
+
+        input {
+            width: 75%;
+            border: 1px solid #2196f37d;
+        }
+
+        button {
+            width: 90px;
+            margin-left: 10px;
+            background: #2196f3e6;
+            border: 1px solid #2196f3e6;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            cursor: pointer;
+        }
+
+        .code {
+            padding: 5px;
+            background-color: #2d2d2d;
+            color: #cccccc;
+            border-radius: 5px;
+            width: 75%;
+        }
     </style>
     <body>
-        <object type="text/x-scriptlet" data="/head" style="width: 100%;height: 80px">
+        <object type="text/x-scriptlet" data="/head" style="width: 100%;height: 80px;position: fixed;top: 0px;">
         </object>
-        <div>
-            <div class="reflection">
-                <p>反射型XSS</p>
-                <p>通过URL参数传递</p>
-                <p>测试用例：http://127.0.0.1:9090/reflection?param=&lt;script>alert(1)&lt;/script></p>
-                <p><input id="param" /><button onclick="jump()">跳转</button></p>
+        <div class="main-content">
+            <div class="item reflection">
+                <p class="title">反射型XSS</p>
+                <p style="text-indent: 30px">&lt;非持久化> 攻击者事先制作好攻击链接, 需要欺骗用户自己去点击链接才能触发XSS代码（服务器中没有这样的页面和内容），一般容易出现在搜索页面</p>
+                <p>测试用例：</p>
+                <p class="code">http://127.0.0.1:9090/reflection?param=&lt;script>alert(/xss/)&lt;/script></p>
+                <p><input id="param" value="http://127.0.0.1:9090/reflection?param="/>
+                    <button onclick="jump()">跳转</button>
+                </p>
             </div>
-            <div class="storage">
-                <p>存储型XSS</p>
-                <p>预先存入数据库的内容</p>
-                <p><button onclick="jumpToStorage()">获取数据</button></p>
+            <div class="item storage">
+                <p class="title">存储型XSS</p>
+                <p style="text-indent: 30px">&lt;持久化> 代码是存储在服务器中的，如在个人信息或发表文章等地方，加入代码，如果没有过滤或过滤不严，那么这些代码将储存到服务器中，
+                    每当有用户访问该页面的时候都会触发代码执行，这种XSS非常危险，容易造成蠕虫，大量盗窃cookie（虽然还有种DOM型XSS，但是也还是包括在存储型XSS内）</p>
+                <p>
+                    <button onclick="jumpToStorage()">获取数据</button>
+                </p>
             </div>
-            <div class="reflection">
-                <p>DOM型XSS</p>
-                <p>添加DOM节点</p>
-                <p>测试用例：&lt;span>&lt;script>alert(1)&lt;/script>&lt;/span></p>
-                <p><input id="dom" /><button onclick="plugIn()">插入节点</button></p>
+            <div class="item dom-div">
+                <p class="title">DOM型XSS</p>
+                <p style="text-indent: 30px">基于文档对象模型Document Objeet Model，DOM)的一种漏洞。DOM是一个与平台、编程语言无关的接口，它允许程序或脚本动态地访问和更新文档内容、结构和样式，
+                    处理后的结果能够成为显示页面的一部分。DOM中有很多对象，其中一些是用户可以操纵的，如uRI ，location，refelTer等。客户端的脚本程序可以通过DOM动态地检查和修改页面内容，
+                    它不依赖于提交数据到服务器端，而从客户端获得DOM中的数据在本地执行，如果DOM中的数据没有经过严格确认，就会产生DOM XSS漏洞。</p>
+                <p>测试用例：</p>
+                <p class="code">&lt;span>&lt;script>alert(/xss/)&lt;/script>&lt;/span></p>
+                <p><input id="dom"/>
+                    <button onclick="plugIn()">插入节点</button>
+                </p>
                 <div id="emptyDiv"></div>
             </div>
+            <button style="width: 110px;position: fixed;top: 100px;right: 100px;" onclick="filter()">
+                <span th:if="${xssStatus} eq 0">开启XSS过滤</span>
+                <span th:if="${xssStatus} eq 1">关闭XSS过滤</span>
+            </button>
         </div>
 
-    <script>
-        function jump() {
-            let param = $("#param").val();
-            console.log(param)
-            window.open(param);
-        }
-        function jumpToStorage() {
-            window.open("/storage");
-        }
-        function plugIn() {
-            let node = $("#dom").val();
-            console.log(node)
-            $("#emptyDiv").html(node)
-        }
-    </script>
+        <script th:inline="javascript">
+            let xssStatus = [[${xssStatus}]];
+
+            /**
+             * 反射型跳转
+             */
+            function jump() {
+                let url = $("#param").val();
+                if (xssStatus === 1) {
+                    url = htmlEncodeByRegExp(url);
+                    console.log(url)
+                }
+                window.open(url);
+            }
+            /** 反射型事件监听 **/
+            document.getElementById("param").addEventListener("blur", function(){
+                let url = $("#param").val();
+                if(url.indexOf("<script>") > -1){
+                    alert("检测到可疑参数：\n" + url);
+                }
+            });
+            /** 存储型跳转 **/
+            function jumpToStorage() {
+                window.open("/storage");
+            }
+            /** DOM型操作 **/
+            function plugIn() {
+                let node = $("#dom").val();
+                if (xssStatus === 1) {
+                    node = htmlEncodeByRegExp(node);
+                }
+                console.log(node)
+                $("#emptyDiv").html(node.replace(/%26/g, "&"))
+            }
+
+            function filter() {
+                window.location.href = "/filter"
+            }
+
+            function htmlEncodeByRegExp(str) {
+                let s = "";
+                if (str.length == 0) return "";
+                s = str.replace(/&/g, "&amp;");
+                s = s.replace(/</g, "&lt;");
+                s = s.replace(/>/g, "&gt;");
+                s = s.replace(/ /g, "&nbsp;");
+                s = s.replace(/\'/g, "&#39;");
+                s = s.replace(/\"/g, "&quot;");
+                s = s.replace(/&/g, "%26")
+                return s;
+            }
+        </script>
     </body>
 </html>
