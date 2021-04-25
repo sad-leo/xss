@@ -42,4 +42,11 @@ public class Blog implements Serializable {
     private Integer status;
 
 
+    public Blog(){}
+
+    public Blog(@NotNull(message = "标题不能为空") String title, @NotNull(message = "摘要不能为空") String description, @NotNull(message = "内容不能为空") String content) {
+        this.title = title;
+        this.description = description;
+        this.content = content;
+    }
 }

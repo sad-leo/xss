@@ -15,7 +15,40 @@
         <object type="text/x-scriptlet" data="/head" style="width: 100%;height: 80px">
         </object>
         <div>
-            asdasdaks
+            <div class="reflection">
+                <p>反射型XSS</p>
+                <p>通过URL参数传递</p>
+                <p>测试用例：http://127.0.0.1:9090/reflection?param=&lt;script>alert(1)&lt;/script></p>
+                <p><input id="param" /><button onclick="jump()">跳转</button></p>
+            </div>
+            <div class="storage">
+                <p>存储型XSS</p>
+                <p>预先存入数据库的内容</p>
+                <p><button onclick="jumpToStorage()">获取数据</button></p>
+            </div>
+            <div class="reflection">
+                <p>DOM型XSS</p>
+                <p>添加DOM节点</p>
+                <p>测试用例：&lt;span>&lt;script>alert(1)&lt;/script>&lt;/span></p>
+                <p><input id="dom" /><button onclick="plugIn()">插入节点</button></p>
+                <div id="emptyDiv"></div>
+            </div>
         </div>
+
+    <script>
+        function jump() {
+            let param = $("#param").val();
+            console.log(param)
+            window.open(param);
+        }
+        function jumpToStorage() {
+            window.open("/storage");
+        }
+        function plugIn() {
+            let node = $("#dom").val();
+            console.log(node)
+            $("#emptyDiv").html(node)
+        }
+    </script>
     </body>
 </html>
