@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>XSS防御中心</title>
+        <link rel="shortcut icon" href="/static/defense.png">
+        <link rel="stylesheet" type="text/css" href="/static/css/list.css"/>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            XSS防御中心
+            <div class="after">
+                <a href="/logout">退出</a>
+            </div>
+        </div>
+        <div class="container">
+            <div class="item left-item">
+                <div class="search">
+                    <input placeholder="请输入攻击类型" id="type">
+                    <input placeholder="请输入脚本内容" id="content">
+                    <button id="searchBtn" onclick="search()">查询</button>
+                </div>
+                <div class="data-table">
+                    <table border="1" bordercolor="#ccc" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <th>ID</th>
+                            <th>攻击类型</th>
+                            <th>脚本内容</th>
+                            <th>攻击时间</th>
+                        </tr>
+                        <tbody id="tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="item right-item">
+                sss
+            </div>
+        </div>
+
+        <script>
+            search();
+
+            function search() {
+                let type = $("#type").val();
+                let content = $("#content").val();
+                $.ajax({
+                    type: "post",
+                    url: "/record",
+                    dataType: "json",
+                    data: {
+                        "type": type,
+                        "content": content
+                    },
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            let content = "";
+                            for (let i = 0, len = data.length; i < len; i++) {
+                                content += "<tr><td>" + data[i].id + "</td>" +
+                                    "<td>" + data[i].type + "</td>" +
+                                    "<td>" + htmlEncodeByRegExp(data[i].content) + "</td>" +
+                                    "<td>" + data[i].createTime + "</td></tr>>"
+                            }
+                            console.log(content)
+                            $("#tbody").html(content);
+                        }
+                    }
+                })
+            }
+
+            function htmlEncodeByRegExp(str) {
+                let s = "";
+                if (str.length == 0) return "";
+                s = str.replace(/&/g, "&amp;");
+                s = s.replace(/</g, "&lt;");
+                s = s.replace(/>/g, "&gt;");
+                s = s.replace(/ /g, "&nbsp;");
+                s = s.replace(/\'/g, "&#39;");
+                s = s.replace(/\"/g, "&quot;");
+                //s = s.replace(/&/g, "%26")
+                return s;
+            }
+
+        </script>
+    </body>
+</html>

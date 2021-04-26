@@ -15,5 +15,14 @@ public class XssFilter {
         s = s.replace("\\\"", "&quot;");
         return s;
     }
+
+    public static boolean checkXss(String value){
+        value = value.toLowerCase().replace(" ","");
+        if(value.contains("<script") || value.contains("javascript")){
+                return true;
+        }
+
+        return false;
+    }
 }
 

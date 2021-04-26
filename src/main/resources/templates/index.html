@@ -98,14 +98,18 @@
                 </p>
                 <div id="emptyDiv"></div>
             </div>
-            <button style="width: 110px;position: fixed;top: 100px;right: 100px;" onclick="filter()">
-                <span th:if="${xssStatus} eq 0">开启XSS过滤</span>
-                <span th:if="${xssStatus} eq 1">关闭XSS过滤</span>
-            </button>
+            <div id="open">
+                <button style="width: 110px;position: fixed;top: 100px;right: 100px;" onclick="filter(1)">开启XSS过滤</button>
+            </div>
+            <div id="close" style="display: none">
+                <button style="width: 110px;position: fixed;top: 100px;right: 100px;" onclick="filter(0)">关闭XSS过滤</button>
+            </div>
+
         </div>
 
         <script th:inline="javascript">
             let xssStatus = [[${xssStatus}]];
+            show(xssStatus);
 
             /**
              * 反射型跳转
@@ -118,29 +122,62 @@
                 }
                 window.open(url);
             }
+
             /** 反射型事件监听 **/
-            document.getElementById("param").addEventListener("blur", function(){
+            document.getElementById("param").addEventListener("blur", function () {
                 let url = $("#param").val();
-                if(url.indexOf("<script>") > -1){
+                if (url.indexOf("<script>") > -1) {
                     alert("检测到可疑参数：\n" + url);
+                    save("反射型",url);
                 }
             });
+
             /** 存储型跳转 **/
             function jumpToStorage() {
                 window.open("/storage");
             }
+
             /** DOM型操作 **/
             function plugIn() {
                 let node = $("#dom").val();
                 if (xssStatus === 1) {
-                    node = htmlEncodeByRegExp(node);
+                    let temp = htmlEncodeByRegExp(node);
+                    if (temp != node) {
+                        alert("检测到可疑操作：\n" + node)
+                        save("DOM型",node);
+                    }
+                    node = temp;
                 }
                 console.log(node)
                 $("#emptyDiv").html(node.replace(/%26/g, "&"))
+                //document.getElementById("emptyDiv").append(node.replace(/%26/g, "&"));
             }
 
-            function filter() {
-                window.location.href = "/filter"
+
+            function filter(param) {
+                $.ajax({
+                    type: "post",
+                    url: "/filter",
+                    dataType: "json",
+                    data: {
+                        "status": param
+                    },
+                    success: function (data) {
+                        xssStatus = data
+                        show(data);
+
+                    }
+                })
+            }
+
+            function show(data) {
+                if (data === 0) {
+                    $("#open").css("display", "")
+                    $("#close").css("display", "none")
+                } else {
+                    $("#open").css("display", "none")
+                    $("#close").css("display", "")
+                }
             }
 
             function htmlEncodeByRegExp(str) {
@@ -155,6 +192,19 @@
                 s = s.replace(/&/g, "%26")
                 return s;
             }
+
+            function save(type,content){
+                $.ajax({
+                    type: "post",
+                    url: "/record/save",
+                    dataType: "json",
+                    data: {
+                        "type": type,
+                        "content": content
+                    }
+                })
+            }
+
         </script>
     </body>
 </html>

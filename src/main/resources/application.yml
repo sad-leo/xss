@@ -3,7 +3,7 @@ server:
 
 spring:
   mvc:
-    static-path-pattern: /**
+    static-path-pattern: /static/**
   resources:
     static-locations: classpath:/static/
   thymeleaf:
@@ -27,15 +27,3 @@ logging:
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**Mapper.xml
-
-shiro-redis:
-  enabled: true
-  redis-manager:
-    host: 127.0.0.1:6379
-
-longlysmile:
-  jwt:
-    secret: f4e2e52034348f86b67cde581c0f9eb5
-    # 过期时间 7天
-    expire: 604800
-    header: token

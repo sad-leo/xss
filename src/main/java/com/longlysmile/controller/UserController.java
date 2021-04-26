@@ -4,7 +4,6 @@ package com.longlysmile.controller;
 import com.longlysmile.common.lang.Result;
 import com.longlysmile.entity.User;
 import com.longlysmile.service.UserService;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +24,6 @@ public class UserController {
     UserService userService;
 
 
-    @RequiresAuthentication
     @GetMapping("/{id}")
     public Result getUserById(@PathVariable("id") long id) {
 
