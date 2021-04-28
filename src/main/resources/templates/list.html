@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="UTF-8">
         <title>XSS防御中心</title>
         <link rel="shortcut icon" href="/static/defense.png">
         <link rel="stylesheet" type="text/css" href="/static/css/list.css"/>
         <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+        <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+        <script src="/static/macarons.js"></script>
     </head>
     <body>
         <div class="header">
@@ -35,12 +37,73 @@
                 </div>
             </div>
             <div class="item right-item">
-                sss
+                <object type="text/x-scriptlet" data="/wordcloud" style="width: 100%;height: 200px;overflow: hidden">
+                </object>
+                <P class="email-title">配置接收者邮箱</P>
+                <p><input id="email" placeholder="xxx@qq.com" th:value="${email}" class="email-input">
+                    <button onclick="save()">保存</button>
+                </p>
+                <div class="echarts" id="echarts">
+
+                </div>
             </div>
         </div>
 
         <script>
             search();
+            init();
+
+            function init() {
+                // 基于准备好的dom，初始化echarts实例
+                const myChart = echarts.init(document.getElementById('echarts'), 'macarons');
+                $.ajax({
+                    type: "get",
+                    url: "/record/statistics",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code === 200) {
+                            // 指定图表的配置项和数据
+                            let option = {
+                                title: {
+                                    text: 'XSS攻击类型统计',
+                                    left: 'center'
+                                },
+                                tooltip: {
+                                    trigger: 'item',
+                                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: {show: false},
+                                        dataView: {show: true, readOnly: false},
+                                        restore: {show: true},
+                                        saveAsImage: {show: true}
+                                    }
+                                },
+                                series: [
+                                    {
+                                        name: 'XSS攻击类型',
+                                        type: 'pie',
+                                        radius: '70%',
+                                        data: data.data,
+                                        itemStyle: {
+                                            normal: {
+                                                shadowBlur: 200,
+                                                shadowColor: 'rgba(0, 0, 0, 0.1)'
+                                            }
+                                        }
+                                    }
+                                ]
+                            };
+
+                            // 使用刚指定的配置项和数据显示图表。
+                            myChart.setOption(option);
+                        }
+
+                    }
+                })
+            }
 
             function search() {
                 let type = $("#type").val();
@@ -67,6 +130,40 @@
                         }
                     }
                 })
+            }
+
+            function save() {
+                let email = $("#email").val();
+                if (!checkEmail(email)) {
+                    alert("邮箱格式错误");
+                    return;
+                }
+                $.ajax({
+                    type: "post",
+                    url: "/save/email",
+                    dataType: "json",
+                    data: {
+                        "email": email
+                    },
+                    success: function (data) {
+                        if (data.code === 200) {
+                            alert("邮箱保存成功")
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+
+            }
+
+            /**
+             * checkEmail 邮箱判断
+             * @param {str} emailStr 邮箱
+             * @return {boolean} 校验结果
+             */
+            function checkEmail(emailStr) {
+                var patten = /^([a-zA-Z0-9]+[_|_|\-|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+                return patten.test(emailStr);
             }
 
             function htmlEncodeByRegExp(str) {

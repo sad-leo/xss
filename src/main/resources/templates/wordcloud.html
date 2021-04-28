@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>词云</title>
+        <script src="https://cdn.bootcss.com/wordcloud2.js/1.1.0/wordcloud2.js"></script>
+        <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+        <style>
+            *{
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="canvas-container" align="center">
+            <canvas id="canvas" width="550px" height="200px" style="width: 100%;"></canvas>
+        </div>
+        <script>
+            var options = eval({
+                "list": [
+                    ['SCRIPT', 10],
+                    ['SRC', 9],
+                    ['JAVASCRIPT', 7],
+                    ['HREF', 6],
+                    ['XSS', 4],
+                    ['ALERT', 5],
+                    ['URL', 4],
+                    ['HTTP', 3],
+                    ['COOKIE', 3]
+                ],
+                "gridSize": 5, // size of the grid in pixels
+                "weightFactor": 5, // number to multiply for size of each word in the list
+                "fontWeight": 'normal', // 'normal', 'bold' or a callback
+                "fontFamily": 'Times, serif', // font to use
+                "color": 'random-light', // 'random-dark' or 'random-light'
+                "backgroundColor": '#333', // the color of canvas
+                "rotateRatio": 1 // probability for the word to rotate. 1 means always rotate
+            });
+            var canvas = document.getElementById('canvas');
+            WordCloud(canvas, options);
+        </script>
+    </body>
+</html>

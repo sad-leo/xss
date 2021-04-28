@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.longlysmile.mapper.AttackRecordMapper">
 
+    <select id="statistics" resultType="java.util.Map">
+        SELECT type name,count(1) value FROM `attack_record` group by type
+    </select>
 </mapper>

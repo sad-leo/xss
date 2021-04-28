@@ -42,6 +42,8 @@ public class AttackRecord implements Serializable {
     )
     private LocalDateTime createTime;
 
+    public AttackRecord(){}
+
     public AttackRecord(String type, String content, LocalDateTime createTime) {
         this.type = type;
         this.content = content;

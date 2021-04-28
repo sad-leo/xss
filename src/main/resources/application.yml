@@ -20,6 +20,22 @@ spring:
     url: jdbc:mysql://192.168.157.128:3306/vueblog?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: Perfect@1314
+  mail:
+    #企业邮箱接收邮件服务器：pop.exmail.qq.com ，使用SSL，端口号995
+    #企业邮箱发送邮件服务器：smtp.exmail.qq.com ，使用SSL，端口号465
+    #个人邮箱发送邮件服务器：smtp.qq.com
+    host: smtp.qq.com
+    username: 1601242027@qq.com #发送邮件的邮箱地址
+    password: swgmhsqcfijobaeb #客户端授权码，不是邮箱密码,网易的是自己设置的
+    properties.mail.smtp.port: 465 #465或者994,QQ官方建议使用465端口，而456端口是SSL协议的，所以不仅要换端口，还需要进行SSL协议替换，163邮箱不需要SSL
+    protocol: smtp
+    properties.mail.smtp.auth: true
+    properties.mail.smtp.starttls.enable: true
+    properties.mail.smtp.starttls.required: true
+    properties.mail.smtp.ssl.enable: true
+    properties.mail.smtp.socketFactory.port: 465
+    properties.mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory
+    default-encoding: utf-8
 
 logging:
   level:

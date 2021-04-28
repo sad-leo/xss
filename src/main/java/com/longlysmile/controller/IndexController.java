@@ -2,6 +2,8 @@ package com.longlysmile.controller;
 
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.longlysmile.common.lang.Result;
+import com.longlysmile.config.GlobalParameters;
 import com.longlysmile.entity.AttackRecord;
 import com.longlysmile.entity.Blog;
 import com.longlysmile.entity.User;
@@ -36,6 +38,7 @@ public class IndexController {
     public static int xssStatus = 0;
 
     public static String USERNAME = "username";
+    public static String USER = "user";
 
     public static String XSS_STORAGE = "存储型";
     public static String XSS_REFLECTION = "反射型";
@@ -48,7 +51,6 @@ public class IndexController {
     @Resource
     private AttackRecordServiceImpl attackRecordService;
 
-
     @RequestMapping("/")
     public ModelAndView index() {
         ModelAndView index = new ModelAndView("index");
@@ -58,14 +60,18 @@ public class IndexController {
 
     @RequestMapping("/head")
     public ModelAndView head() {
-
         return new ModelAndView("head");
+    }
+
+    @RequestMapping("/wordcloud")
+    public ModelAndView wordcloud() {
+        return new ModelAndView("wordcloud");
     }
 
     @RequestMapping("/reflection")
     public ModelAndView reflection(String param) {
         if (XssFilter.checkXss(param)) {
-            attackRecordService.save(new AttackRecord(XSS_REFLECTION, param, LocalDateTime.now()));
+            attackRecordService.saveAndSend(new AttackRecord(XSS_REFLECTION, param, LocalDateTime.now()));
         }
         ModelAndView reflection = new ModelAndView("reflection");
         reflection.addObject("key", param);
@@ -80,7 +86,7 @@ public class IndexController {
             if ("java.lang.String".equals(field.getType().getName())) {
                 String str = (String) field.get(blog);
                 if (XssFilter.checkXss(str)) {
-                    attackRecordService.save(new AttackRecord(XSS_STORAGE, str, LocalDateTime.now()));
+                    attackRecordService.saveAndSend(new AttackRecord(XSS_STORAGE, str, LocalDateTime.now()));
                 }
             }
         }
@@ -111,7 +117,6 @@ public class IndexController {
         return xssStatus;
     }
 
-
     @RequestMapping("/login")
     public ModelAndView login() {
         return new ModelAndView("login");
@@ -125,12 +130,17 @@ public class IndexController {
             return new ModelAndView("/error/401");
         }
         session.setAttribute(USERNAME, account);
-        return new ModelAndView("list");
+        session.setAttribute(USER, one);
+        GlobalParameters.RECIPIENT = one.getEmail();
+        ModelAndView modelAndView = new ModelAndView("list");
+        modelAndView.addObject("email", one.getEmail());
+        return modelAndView;
     }
 
     @RequestMapping(value = "logout")
     public ModelAndView list(HttpSession session) {
         session.removeAttribute(USERNAME);
+        session.removeAttribute(USER);
         return new ModelAndView("login");
     }
 
@@ -145,6 +155,21 @@ public class IndexController {
             queryWrapper.like("content", content);
         }
         return attackRecordService.list(queryWrapper);
+    }
+
+    @RequestMapping(value = "save/email", method = RequestMethod.POST)
+    @ResponseBody
+    public Result saveEmail(String email, HttpSession session) {
+        if (StringUtils.isEmpty(email)) {
+            return Result.fail("邮件不能为空");
+        }
+        User user = (User) session.getAttribute(USER);
+        User u = new User();
+        u.setId(user.getId());
+        u.setEmail(email);
+        userService.updateById(u);
+        GlobalParameters.RECIPIENT = email;
+        return Result.success();
     }
 
 }
